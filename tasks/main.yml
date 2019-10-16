@@ -1,0 +1,20 @@
+- name: put a pgpass.conf
+  template: src=pgpass.conf dest=/var/lib/postgresql/.pgpass.conf mode=0600 owner=postgres group=postgres
+
+- name: create the data dir (part 1)
+  file: state=directory dest=/var/lib/postgresql/{{ postgres_version }} owner=postgres group=postgres
+
+- name: create the data dir (part 2)
+  file: state=directory dest=/var/lib/postgresql/{{ postgres_version }}/main owner=postgres group=postgres mode=0700
+
+- name: dump a database
+  become: yes
+  become_user: postgres
+  shell: PGPASSFILE=~/.pgpass.conf pg_basebackup -h {{ postgresql_replication_master_address }} -D /var/lib/postgresql/{{ postgres_version }}/main -U repl -vP -w creates=/var/lib/postgresql/{{ postgres_version }}/main/pg_wal
+
+- name: create a cluster
+  shell: pg_createcluster {{ postgres_version }} main creates=/etc/postgresql/{{ postgres_version }}/main/postgresql.conf
+
+- name: put recovery.conf
+  template: src=recovery.conf dest=/var/lib/postgresql/{{ postgres_version }}/main/recovery.conf mode=0600 owner=postgres group=postgres
+  notify: restart PostgreSQL
