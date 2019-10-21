@@ -10,7 +10,7 @@
 - name: dump a database
   become: yes
   become_user: postgres
-  shell: PGPASSFILE=~/.pgpass.conf pg_basebackup -h {{ postgresql_replication_master_address }} -D /var/lib/postgresql/{{ postgres_version }}/main -U {{ postgresql_replication_master_user }} -vP -w creates=/var/lib/postgresql/{{ postgres_version }}/main/pg_wal
+  shell: PGPASSFILE=~/.pgpass.conf pg_basebackup -h {{ postgresql_replication_master_address }} -p {{ postgresql_replication_master_port }} -D /var/lib/postgresql/{{ postgres_version }}/main -U {{ postgresql_replication_master_user }} -vP -w creates=/var/lib/postgresql/{{ postgres_version }}/main/pg_wal
 
 - name: create a cluster
   shell: pg_createcluster {{ postgres_version }} main creates=/etc/postgresql/{{ postgres_version }}/main/postgresql.conf
